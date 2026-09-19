@@ -13,5 +13,26 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
-  
+
+  groups       Group[]
+  groupMembers GroupMember[]
+}
+
+model Group {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  createdById  String // ID User yang membuat grup
+  createdBy    User          @relation(fields: [createdById], references: [id])
+  groupMembers GroupMember[]
+}
+
+model GroupMember {
+  id      String @id @default(uuid())
+  userId  String
+  groupId String
+
+  user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id])
 }

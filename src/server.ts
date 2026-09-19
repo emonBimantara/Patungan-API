@@ -3,6 +3,7 @@ import { connectDB, disconnectDB } from "./config/db.js"
 import { config } from "dotenv"
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/authRoutes.js"
+import groupRouter from "./routes/groupRoutes.js";
 
 config()
 connectDB()
@@ -14,6 +15,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser());
 
 app.use("/auth", authRouter)
+app.use("/groups", groupRouter);
 
 const port = 5001
 const server = app.listen(port, () => {
