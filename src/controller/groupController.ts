@@ -106,4 +106,22 @@ const getGroupMembers = async (
         }
     })
 }
-export { createGroup, addMember, getGroupMembers }
+
+const getMyGroups = async (
+    req: Request,
+    res: Response
+) => {
+    const groups = await prisma.groupMember.findMany({
+        where: { userId: req.user.id },
+        include: { group: true }
+    })
+
+    res.status(200).json({
+        status: "Success",
+        data: {
+            groups
+        }
+    })
+}
+
+export { createGroup, addMember, getGroupMembers, getMyGroups }
