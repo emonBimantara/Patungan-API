@@ -113,14 +113,38 @@ const getMyGroups = async (
 ) => {
     const groups = await prisma.groupMember.findMany({
         where: { userId: req.user.id },
-        include: { group: true }
+        include: {
+            group: {
+                include: {
+                    groupMembers: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    email: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     })
+
+    const formattedGroups = groups.map((item) => ({
+        id: item.group.id,
+        name: item.group.name,
+        members: item.group.groupMembers.map((member) => ({
+            id: member.user.id,
+            name: member.user.name,
+            email: member.user.email
+        }))
+    }));
 
     res.status(200).json({
         status: "Success",
-        data: {
-            groups
-        }
+        data: { groups: formattedGroups }
     })
 }
 
