@@ -26,6 +26,7 @@ model Group {
   createdById  String // ID User yang membuat grup
   createdBy    User          @relation(fields: [createdById], references: [id])
   groupMembers GroupMember[]
+  bill         Bill?
 }
 
 model GroupMember {
@@ -34,5 +35,15 @@ model GroupMember {
   groupId String
 
   user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id])
+}
+
+model Bill {
+  id        String   @id @default(uuid())
+  name      String
+  total     Decimal
+  groupId   String   @unique
+  createdAt DateTime @default(now())
+
   group Group @relation(fields: [groupId], references: [id])
 }
