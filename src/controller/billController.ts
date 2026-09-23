@@ -100,4 +100,117 @@ const addBillItem = async (
     });
 };
 
-export { createBill, addBillItem };
+const confirmBillItems = async (
+    req: Request<{ billId: string }>,
+    res: Response
+) => {
+    // Ambil ID bill dari URL
+    const { billId } = req.params;
+
+    // Ambil daftar item yang dipilih dari request body
+    const { itemIds } = req.body;
+
+    // User diambil dari authMiddleware, bukan dari request body
+    // supaya user tidak bisa mengaku sebagai user lain
+    const user = req.user;
+
+    // Pastikan bill yang dimaksud benar-benar ada
+    const bill = await prisma.bill.findUnique({
+        where: {
+            id: billId
+        }
+    });
+
+    if (!bill) {
+        return res.status(404).json({
+            error: "Bill not found"
+        });
+    }
+
+    // Cari semua BillItem yang dipilih
+    // sekaligus memastikan item-item tersebut memang milik bill ini
+    const items = await prisma.billItem.findMany({
+        where: {
+            id: {
+                in: itemIds
+            },
+            billId
+        }
+    });
+
+    // Pastikan semua item yang dikirim memang ditemukan
+    if (items.length !== itemIds.length) {
+        return res.status(400).json({
+            error: "One or more items are invalid"
+        });
+    }
+
+    // Buat selection untuk setiap item yang dipilih oleh user
+    const selections = await prisma.billItemSelection.createMany({
+        data: itemIds.map((itemId: string) => ({
+            billItemId: itemId,
+            userId: user.id
+        })),
+        skipDuplicates: true
+    });
+
+    return res.status(201).json({
+        status: "success",
+        data: {
+            selections
+        }
+    });
+};
+
+const getBillDetail = async (
+    req: Request<{ billId: string }>,
+    res: Response
+) => {
+    // Ambil ID bill dari URL
+    const { billId } = req.params;
+
+    // Cari bill sekaligus semua item dan selection-nya
+    const bill = await prisma.bill.findUnique({
+        where: {
+            id: billId
+        },
+        include: {
+            items: {
+                include: {
+                    selections: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            paidBy: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            }
+        }
+    });
+
+    // Kalau bill tidak ditemukan
+    if (!bill) {
+        return res.status(404).json({
+            error: "Bill not found"
+        });
+    }
+
+    return res.status(200).json({
+        status: "success",
+        data: {
+            bill
+        }
+    });
+};
+
+export { createBill, addBillItem, confirmBillItems, getBillDetail };
