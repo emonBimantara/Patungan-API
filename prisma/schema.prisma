@@ -16,6 +16,8 @@ model User {
 
   groups       Group[]
   groupMembers GroupMember[]
+  bills        Bill[]
+  billItems    BillItem[]
 }
 
 model Group {
@@ -40,10 +42,23 @@ model GroupMember {
 
 model Bill {
   id        String   @id @default(uuid())
-  name      String
+  paidById  String
   total     Decimal
   groupId   String   @unique
   createdAt DateTime @default(now())
 
-  group Group @relation(fields: [groupId], references: [id])
+  group  Group      @relation(fields: [groupId], references: [id])
+  paidBy User       @relation(fields: [paidById], references: [id])
+  items  BillItem[]
+}
+
+model BillItem {
+  id     String  @id @default(uuid())
+  billId String
+  userId String
+  name   String
+  price  Decimal
+
+  bill Bill @relation(fields: [billId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }

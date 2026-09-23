@@ -4,6 +4,7 @@ import { config } from "dotenv"
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/authRoutes.js"
 import groupRouter from "./routes/groupRoutes.js";
+import billRouter from "./routes/billRoutes.js";
 
 config()
 connectDB()
@@ -16,6 +17,7 @@ app.use(cookieParser());
 
 app.use("/auth", authRouter)
 app.use("/groups", groupRouter);
+app.use("/groups", billRouter);
 
 const port = 5001
 const server = app.listen(port, () => {
