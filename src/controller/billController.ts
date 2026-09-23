@@ -92,10 +92,22 @@ const addBillItem = async (
         }
     });
 
-    res.status(201).json({
+    const updatedBill = await prisma.bill.update({
+        where: {
+            id: billId
+        },
+        data: {
+            total: {
+                increment: price
+            }
+        }
+    });
+
+    return res.status(201).json({
         status: "success",
         data: {
-            billItem
+            billItem,
+            total: updatedBill.total
         }
     });
 };
