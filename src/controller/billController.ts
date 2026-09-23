@@ -65,6 +65,39 @@ const createBill = async (
     });
 };
 
-export {
-    createBill
+const addBillItem = async (
+    req: Request<{ billId: string }>,
+    res: Response
+) => {
+    const { billId } = req.params;
+    const { name, price } = req.body;
+
+    const bill = await prisma.bill.findUnique({
+        where: {
+            id: billId
+        }
+    });
+
+    if (!bill) {
+        return res.status(404).json({
+            error: "Bill not found"
+        });
+    }
+
+    const billItem = await prisma.billItem.create({
+        data: {
+            billId,
+            name,
+            price
+        }
+    });
+
+    res.status(201).json({
+        status: "success",
+        data: {
+            billItem
+        }
+    });
 };
+
+export { createBill, addBillItem };

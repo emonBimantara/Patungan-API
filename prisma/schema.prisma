@@ -14,10 +14,10 @@ model User {
   password  String
   createdAt DateTime @default(now())
 
-  groups       Group[]
-  groupMembers GroupMember[]
-  bills        Bill[]
-  billItems    BillItem[]
+  groups             Group[]
+  groupMembers       GroupMember[]
+  bills              Bill[]
+  billItemSelections BillItemSelection[]
 }
 
 model Group {
@@ -55,10 +55,21 @@ model Bill {
 model BillItem {
   id     String  @id @default(uuid())
   billId String
-  userId String
   name   String
   price  Decimal
 
-  bill Bill @relation(fields: [billId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  bill       Bill                @relation(fields: [billId], references: [id])
+  selections BillItemSelection[]
+}
+
+model BillItemSelection {
+  id         String   @id @default(uuid())
+  billItemId String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  billItem BillItem @relation(fields: [billItemId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([billItemId, userId])
 }
