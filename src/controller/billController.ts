@@ -225,4 +225,59 @@ const getBillDetail = async (
     });
 };
 
-export { createBill, addBillItem, confirmBillItems, getBillDetail };
+const getBillSummary = async (
+    req: Request<{ billId: string }>,
+    res: Response
+) => {
+    // Ambil ID bill dari URL
+    const { billId } = req.params;
+
+    // User diambil dari authMiddleware
+    const user = req.user;
+
+    // Cari bill sekaligus item dan selection milik user ini
+    const bill = await prisma.bill.findUnique({
+        where: {
+            id: billId
+        },
+        include: {
+            items: {
+                include: {
+                    selections: {
+                        where: {
+                            userId: user.id
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Pastikan bill ada
+    if (!bill) {
+        return res.status(404).json({
+            error: "Bill not found"
+        });
+    }
+
+    // Ambil hanya item yang dipilih oleh user
+    const selectedItems = bill.items.filter(
+        (item) => item.selections.length > 0
+    );
+
+    // Hitung total harga item yang dipilih
+    const total = selectedItems.reduce(
+        (sum, item) => sum + Number(item.price),
+        0
+    );
+
+    return res.status(200).json({
+        status: "success",
+        data: {
+            items: selectedItems,
+            total
+        }
+    });
+};
+
+export { createBill, addBillItem, confirmBillItems, getBillDetail, getBillSummary };
