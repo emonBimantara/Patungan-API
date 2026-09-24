@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../config/db.js";
+import { stringify } from "node:querystring";
 
 const createGroup = async (req: Request<{ groupId: string }>, res: Response) => {
     const { name } = req.body
@@ -148,4 +149,63 @@ const getMyGroups = async (
     })
 }
 
-export { createGroup, addMember, getGroupMembers, getMyGroups }
+const getGroupDetail = async (
+    req: Request<{ groupId: string }>,
+    res: Response
+) => {
+    const { groupId } = req.params
+    const user = req.user
+
+    // Apakah user merupakan member group ini?
+    const membership = await prisma.groupMember.findFirst({
+        where: {
+            groupId,
+            userId: user.id
+        }
+    })
+
+    if (!membership) {
+        return res.status(403).json({ error: "You ain't a member of this group" })
+    }
+
+    // Ambil detail group
+    const group = await prisma.group.findUnique({
+        where: {
+            id: groupId
+        },
+        include: {
+            createdBy: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true
+                }
+            },
+            groupMembers: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
+                    }
+                }
+            },
+            bill: true
+        }
+    })
+
+    if (!group) {
+        return res.status(404).json({ error: "Group not found" });
+    }
+
+    return res.status(200).json({
+        status: "success",
+        data: {
+            group
+        }
+    });
+}
+
+export { createGroup, addMember, getGroupMembers, getMyGroups, getGroupDetail }
