@@ -21,9 +21,10 @@ model User {
 }
 
 model Group {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  name        String
+  createdAt   DateTime @default(now())
+  paymentInfo String?
 
   createdById  String // ID User yang membuat grup
   createdBy    User          @relation(fields: [createdById], references: [id])

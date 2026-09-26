@@ -3,11 +3,12 @@ import { prisma } from "../config/db.js";
 import { stringify } from "node:querystring";
 
 const createGroup = async (req: Request<{ groupId: string }>, res: Response) => {
-    const { name } = req.body
+    const { name, paymentInfo } = req.body
 
     const group = await prisma.group.create({
         data: {
             name,
+            paymentInfo,
             createdById: req.user.id
         }
     })

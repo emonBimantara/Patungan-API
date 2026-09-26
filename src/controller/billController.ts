@@ -130,6 +130,13 @@ const confirmBillItems = async (
     const bill = await prisma.bill.findUnique({
         where: {
             id: billId
+        },
+        include: {
+            group: {
+                select: {
+                    paymentInfo: true
+                }
+            }
         }
     });
 
