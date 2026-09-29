@@ -75,12 +75,29 @@ const addBillItem = async (
     const bill = await prisma.bill.findUnique({
         where: {
             id: billId
+        },
+        include: {
+            group: {
+                include: {
+                    groupMembers: true
+                }
+            }
         }
     });
 
     if (!bill) {
         return res.status(404).json({
             error: "Bill not found"
+        });
+    }
+
+    const isMember = bill.group.groupMembers.some(
+        (member) => member.userId === req.user.id
+    );
+
+    if (!isMember) {
+        return res.status(403).json({
+            error: "You are not a member of this group"
         });
     }
 
