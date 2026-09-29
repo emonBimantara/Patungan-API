@@ -17,3 +17,9 @@ export const addBillItemSchema = z.object({
     name: z.string().trim().min(1, "Item name is required"),
     price: z.number().positive("Price must be greater than 0")
 });
+
+export const confirmBillItemsSchema = z.object({
+    itemIds: z.array(
+        z.string().uuid("Invalid item ID")
+    ).min(1, "At least one item is required")
+});
