@@ -21,7 +21,21 @@ const createBill = async (
         });
     }
 
-    // 2. Cek apakah user yang membayar adalah member group
+    // 2.1 Cek apakah requester adalah member group
+    const membership = await prisma.groupMember.findFirst({
+        where: {
+            groupId,
+            userId: req.user.id
+        }
+    });
+
+    if (!membership) {
+        return res.status(403).json({
+            error: "You are not a member of this group"
+        });
+    }
+
+    // 2.2 Cek apakah user yang membayar adalah member group
     const payer = await prisma.groupMember.findFirst({
         where: {
             groupId,
@@ -291,6 +305,11 @@ const getBillSummary = async (
             id: billId
         },
         include: {
+            group: {
+                include: {
+                    groupMembers: true
+                }
+            },
             items: {
                 include: {
                     selections: {
@@ -307,6 +326,16 @@ const getBillSummary = async (
     if (!bill) {
         return res.status(404).json({
             error: "Bill not found"
+        });
+    }
+
+    const isMember = bill.group.groupMembers.some(
+        (member) => member.userId === user.id
+    );
+
+    if (!isMember) {
+        return res.status(403).json({
+            error: "You are not a member of this group"
         });
     }
 

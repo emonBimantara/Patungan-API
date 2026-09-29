@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { prisma } from "../config/db.js";
-import { stringify } from "node:querystring";
 
 const createGroup = async (req: Request<{ groupId: string }>, res: Response) => {
     const { name, paymentInfo } = req.body
@@ -95,6 +94,19 @@ const getGroupMembers = async (
     res: Response
 ) => {
     const groupId = req.params.groupId as string
+
+    const membership = await prisma.groupMember.findFirst({
+        where: {
+            groupId,
+            userId: req.user.id
+        }
+    });
+
+    if (!membership) {
+        return res.status(403).json({
+            error: "You are not a member of this group"
+        });
+    }
 
     const members = await prisma.groupMember.findMany({
         where: { groupId: groupId },
