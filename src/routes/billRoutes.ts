@@ -8,10 +8,12 @@ import {
 } from "../controller/billController.js";
 
 import { authMiddleware } from "../middleware/authMiddleware.js";
+import { validate } from "../middleware/validationMiddleware.js";
+import { createBillSchema } from "../validations/groupValidation.js";
 
 const router = express.Router();
 
-router.post("/:groupId/bill", authMiddleware, createBill);
+router.post("/:groupId/bill", authMiddleware, validate(createBillSchema), createBill);
 router.post("/:billId/items", authMiddleware, addBillItem);
 router.post("/:billId/items/confirm", authMiddleware, confirmBillItems);
 router.get("/:billId/bill", authMiddleware, getBillDetail);

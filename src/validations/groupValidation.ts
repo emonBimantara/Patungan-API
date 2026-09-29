@@ -8,3 +8,7 @@ export const createGroupSchema = z.object({
 export const addGroupMemberSchema = z.object({
     userId: z.string().uuid("Invalid User ID")
 })
+
+export const createBillSchema = z.object({
+    paidById: z.string().uuid("Invalid payer ID")
+})
