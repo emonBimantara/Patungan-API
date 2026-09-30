@@ -19,7 +19,7 @@ app.use("/auth", authRouter)
 app.use("/groups", groupRouter);
 app.use("/groups", billRouter);
 
-const port = 5001
+const port = Number(process.env.PORT) || 5001;
 const server = app.listen(port, () => {
     console.log(`Server running on PORT ${port}`)
 })
