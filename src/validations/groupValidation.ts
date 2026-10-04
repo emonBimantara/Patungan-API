@@ -6,7 +6,7 @@ export const createGroupSchema = z.object({
 })
 
 export const addGroupMemberSchema = z.object({
-    userId: z.string().uuid("Invalid User ID")
+    email: z.string().email("Invalid Email")
 })
 
 export const createBillSchema = z.object({
