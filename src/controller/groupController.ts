@@ -28,7 +28,7 @@ const createGroup = async (req: Request<{ groupId: string }>, res: Response) => 
 }
 
 const addMember = async (req: Request, res: Response) => {
-    const { userId } = req.body
+    const { email } = req.body
     const groupId = req.params.groupId as string;
 
     // Find Group
@@ -37,7 +37,9 @@ const addMember = async (req: Request, res: Response) => {
     })
 
     if (!group) {
-        return res.status(404).json({ error: "Group Not Found" })
+        return res.status(404).json({
+            error: "Group Not Found"
+        })
     }
 
     // Check the request from group creator
@@ -47,9 +49,9 @@ const addMember = async (req: Request, res: Response) => {
         });
     }
 
-    // Find user that want to add to group
+    // Find user by email
     const user = await prisma.user.findUnique({
-        where: { id: userId }
+        where: { email }
     });
 
     if (!user) {
@@ -61,7 +63,7 @@ const addMember = async (req: Request, res: Response) => {
     // User already exist in group?
     const existingMember = await prisma.groupMember.findFirst({
         where: {
-            userId,
+            userId: user.id,
             groupId
         }
     });
@@ -75,7 +77,7 @@ const addMember = async (req: Request, res: Response) => {
     // Add Member
     const member = await prisma.groupMember.create({
         data: {
-            userId,
+            userId: user.id,
             groupId
         }
     });
@@ -86,7 +88,6 @@ const addMember = async (req: Request, res: Response) => {
             member
         }
     });
-
 }
 
 const getGroupMembers = async (
