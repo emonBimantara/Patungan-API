@@ -56,7 +56,7 @@ const login = async (req: Request, res: Response) => {
     if (!user) {
         return res
             .status(401)
-            .json({ error: "Invalid Email" })
+            .json({ message: "Invalid Email or Password" })
     }
 
     // Verify Password
@@ -65,7 +65,7 @@ const login = async (req: Request, res: Response) => {
     if (!isPasswordValid) {
         return res
             .status(401)
-            .json({ error: "Invalid Password" })
+            .json({ message: "Invalid Email or Password" })
     }
 
     // Generate JWT Token
@@ -76,6 +76,7 @@ const login = async (req: Request, res: Response) => {
         data: {
             user: {
                 id: user.id,
+                name: user.name,
                 email: email,
             },
             token
