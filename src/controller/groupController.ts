@@ -1,31 +1,49 @@
 import type { Request, Response } from "express";
 import { prisma } from "../config/db.js";
 
-const createGroup = async (req: Request<{ groupId: string }>, res: Response) => {
-    const { name, paymentInfo } = req.body
 
-    const group = await prisma.group.create({
-        data: {
-            name,
-            paymentInfo,
-            createdById: req.user.id
-        }
-    })
+const createGroup = async (req: Request, res: Response) => {
+    const { name, paymentInfo } = req.body;
 
-    await prisma.groupMember.create({
-        data: {
-            userId: req.user.id,
-            groupId: group.id
-        }
-    })
+    const result = await prisma.$transaction(async (tx) => {
+        // 1. Buat group
+        const group = await tx.group.create({
+            data: {
+                name,
+                paymentInfo,
+                createdById: req.user.id
+            }
+        });
 
-    res.status(201).json({
+        // 2. Masukkan creator sebagai member group
+        await tx.groupMember.create({
+            data: {
+                userId: req.user.id,
+                groupId: group.id
+            }
+        });
+
+        // 3. Buat bill otomatis dengan creator sebagai pembayar
+        const bill = await tx.bill.create({
+            data: {
+                groupId: group.id,
+                paidById: group.createdById,
+                total: 0
+            }
+        });
+
+        return { group, bill };
+    });
+
+    return res.status(201).json({
         status: "success",
         data: {
-            group
+            ...result.group,
+            bill: result.bill
         }
-    })
-}
+    });
+};
+
 
 const addMember = async (req: Request, res: Response) => {
     const { email } = req.body
