@@ -9,9 +9,7 @@ export const addGroupMemberSchema = z.object({
     email: z.string().email("Invalid Email")
 })
 
-export const createBillSchema = z.object({
-    paidById: z.string().uuid("Invalid payer ID")
-})
+export const createBillSchema = z.object({});
 
 export const addBillItemSchema = z.object({
     name: z.string().trim().min(1, "Item name is required"),

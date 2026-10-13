@@ -6,7 +6,6 @@ const createBill = async (
     res: Response
 ) => {
     const { groupId } = req.params;
-    const { paidById } = req.body;
 
     // 1. Cari group
     const group = await prisma.group.findUnique({
@@ -21,31 +20,10 @@ const createBill = async (
         });
     }
 
-    // 2.1 Cek apakah requester adalah member group
-    const membership = await prisma.groupMember.findFirst({
-        where: {
-            groupId,
-            userId: req.user.id
-        }
-    });
 
-    if (!membership) {
+    if (group.createdById !== req.user.id) {
         return res.status(403).json({
-            error: "You are not a member of this group"
-        });
-    }
-
-    // 2.2 Cek apakah user yang membayar adalah member group
-    const payer = await prisma.groupMember.findFirst({
-        where: {
-            groupId,
-            userId: paidById
-        }
-    });
-
-    if (!payer) {
-        return res.status(400).json({
-            error: "Payer is not a member of this group"
+            error: "Only the group creator can create a bill"
         });
     }
 
@@ -66,10 +44,11 @@ const createBill = async (
     const bill = await prisma.bill.create({
         data: {
             groupId,
-            paidById,
+            paidById: group.createdById,
             total: 0
         }
     });
+
 
     res.status(201).json({
         status: "success",
